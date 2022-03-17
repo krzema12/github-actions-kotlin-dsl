@@ -554,4 +554,57 @@ class IntegrationTest : FunSpec({
                       token: ${'$'}{{ steps.step-0.outputs.my-unsafe-output }}
         """.trimIndent()
     }
+
+    test("WIP: using a Kotlin snippet") {
+        // given
+        val targetTempFile = tempfile()
+        val workflowWithTempTargetFile = workflow(
+            name = "Test workflow",
+            on = listOf(Push()),
+            sourceFile = Paths.get(".github/workflows/some_workflow.main.kts"),
+            targetFile = targetTempFile.toPath(),
+        ) {
+            job(
+                name = "test_job",
+                runsOn = RunnerType.UbuntuLatest,
+            ) {
+                uses(
+                    name = "Check out",
+                    action = CheckoutV3(),
+                )
+
+                run(
+                    name = "Hello world!",
+                    command = "echo 'hello!'",
+                )
+
+                runKotlin(
+                    name = "Run some Kotlin code",
+                    // These parameters should be passed implicitly
+                    sourceFile = Paths.get(".github/workflows/some_workflow.main.kts"),
+                ) {
+                    val names = listOf("foo", "bar", "baz")
+                    val mangledNames = names
+                        .map { it.reversed() }
+                        .mapIndexed { index, string -> "$string-$index" }
+                        .joinToString(separator = " ### ")
+                    println("This will be logged on the server: $mangledNames")
+                    // TODO allow passing some inputs to this logic, and retrieving output
+                }
+
+                runKotlin(
+                    name = "Hello",
+                    // These parameters should be passed implicitly
+                    sourceFile = Paths.get(".github/workflows/some_workflow.main.kts"),
+                ) {
+                    println("Another runKotlin block: hello world!")
+                }
+            }
+        }
+
+        // when
+        val yaml = workflowWithTempTargetFile.toYaml()
+
+        println(yaml)
+    }
 })

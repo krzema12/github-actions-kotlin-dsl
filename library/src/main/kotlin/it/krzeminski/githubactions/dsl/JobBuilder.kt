@@ -7,6 +7,7 @@ import it.krzeminski.githubactions.domain.ExternalActionStep
 import it.krzeminski.githubactions.domain.ExternalActionStepWithOutputs
 import it.krzeminski.githubactions.domain.Job
 import it.krzeminski.githubactions.domain.RunnerType
+import java.nio.file.Path
 
 @Suppress("LongParameterList")
 @GithubActionsDsl
@@ -81,6 +82,31 @@ class JobBuilder(
         )
         job = job.copy(steps = job.steps + newStep)
         return newStep
+    }
+
+    fun runKotlin(
+        name: String,
+        sourceFile: Path,
+        block: () -> Unit,
+    ) {
+        println(name)
+        println(block)
+        val serverStepName = "run-kotlin-rest-server"
+        if (job.steps.find { it is CommandStep && it.name == serverStepName } == null) {
+            run(
+                name = serverStepName,
+                command = "$sourceFile &"
+            )
+        }
+        val existingRunKotlinStepsCount = job.steps.count { it is CommandStep && "runKotlin" in it.name }
+        val runKotlinStepName = "runKotlin-$existingRunKotlinStepsCount"
+        run(
+            name = "$name-$runKotlinStepName",
+            // TODO call the REST service
+            command = """
+                test
+            """.trimIndent()
+        )
     }
 
     fun build() = job
