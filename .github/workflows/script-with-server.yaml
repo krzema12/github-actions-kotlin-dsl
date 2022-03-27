@@ -22,31 +22,31 @@ jobs:
         run: while netstat -lnt | awk '$4 ~ /:8123$/ {exit 1}'; do sleep 1; done
       - id: step-3
         name: Call the server #1
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-4
         name: Call the server #2
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-5
         name: Call the server #3
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-6
         name: Call the server #4
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-7
         name: Call the server #5
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-8
         name: Call the server #6
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-9
         name: Call the server #7
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-10
         name: Call the server #8
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-11
         name: Call the server #9
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic
       - id: step-12
         name: Call the server #10
-        run: curl http://localhost:8000/action-logic
+        run: curl http://localhost:8123/action-logic

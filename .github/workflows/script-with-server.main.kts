@@ -42,7 +42,7 @@ val scriptWithServerWorkflow = workflow(
         (1..10).forEach {
             run(
                 name = "Call the server #$it",
-                command = "curl http://localhost:8000/action-logic",
+                command = "curl http://localhost:8123/action-logic",
             )
         }
     }
