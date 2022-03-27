@@ -1,0 +1,28 @@
+# This file was generated using Kotlin DSL (.github/workflows/script-with-server.main.kts).
+# If you want to modify the workflow, please change the Kotlin file and regenerate this YAML file.
+# Generated with https://github.com/krzema12/github-actions-kotlin-dsl
+
+name: Script with server
+
+on:
+  push:
+
+jobs:
+  "some-job":
+    runs-on: "ubuntu-latest"
+    steps:
+      - id: step-0
+        name: Checkout
+        uses: actions/checkout@v3
+      - id: step-1
+        name: Start server in background
+        run: .github/workflows/script-with-server.main.kts &
+      - id: step-2
+        name: Wait for the server to start
+        run: sleep 30
+      - id: step-3
+        name: Call the server
+        run: http://localhost:8000/action-logic
+      - id: step-4
+        name: After calling the server
+        run: echo 'Works!'
