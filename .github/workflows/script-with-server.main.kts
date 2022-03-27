@@ -13,6 +13,7 @@ import it.krzeminski.githubactions.domain.RunnerType
 import it.krzeminski.githubactions.domain.triggers.Push
 import it.krzeminski.githubactions.dsl.workflow
 import it.krzeminski.githubactions.yaml.writeToFile
+import java.io.File
 import java.nio.file.Paths
 
 val scriptWithServerWorkflow = workflow(
@@ -39,12 +40,14 @@ val scriptWithServerWorkflow = workflow(
             name = "Wait for the server to start",
             command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
         )
-        (1..10).forEach {
-            run(
-                name = "Call the server #$it",
-                command = "curl http://localhost:8123/action-logic",
-            )
-        }
+        run(
+            name = "Call the server",
+            command = "curl http://localhost:8123/action-logic",
+        )
+        run(
+            name = "Read written file",
+            command = "cat output.txt",
+        )
     }
 }
 
@@ -65,6 +68,7 @@ fun startServerIfRunningOnGitHub() {
         routing {
             get("/action-logic") {
                 println("Hello from action logic!")
+                File("output.txt").writeText("Written from Kotlin logic")
                 call.respondText("Response from API")
             }
         }
