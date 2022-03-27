@@ -37,16 +37,14 @@ val scriptWithServerWorkflow = workflow(
         )
         run(
             name = "Wait for the server to start",
-            command = "sleep 30",
+            command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
         )
-        run(
-            name = "Call the server",
-            command = "curl http://localhost:8000/action-logic",
-        )
-        run(
-            name = "After calling the server",
-            command = "echo 'Works!'",
-        )
+        (1..10).forEach {
+            run(
+                name = "Call the server #$it",
+                command = "curl http://localhost:8000/action-logic",
+            )
+        }
     }
 }
 
@@ -63,7 +61,7 @@ fun startServerIfRunningOnGitHub() {
 
     println("Starting server")
 
-    embeddedServer(Netty, port = 8000) {
+    embeddedServer(Netty, port = 8123) {
         routing {
             get("/action-logic") {
                 println("Hello from action logic!")
