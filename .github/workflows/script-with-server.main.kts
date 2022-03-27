@@ -41,7 +41,7 @@ val scriptWithServerWorkflow = workflow(
         )
         run(
             name = "Call the server",
-            command = "http://localhost:8000/action-logic",
+            command = "curl http://localhost:8000/action-logic",
         )
         run(
             name = "After calling the server",

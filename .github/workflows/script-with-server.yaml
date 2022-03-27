@@ -22,7 +22,7 @@ jobs:
         run: sleep 30
       - id: step-3
         name: Call the server
-        run: http://localhost:8000/action-logic
+        run: curl http://localhost:8000/action-logic
       - id: step-4
         name: After calling the server
         run: echo 'Works!'
