@@ -11,10 +11,13 @@ import io.ktor.server.netty.*
 import it.krzeminski.githubactions.actions.actions.CheckoutV3
 import it.krzeminski.githubactions.domain.RunnerType
 import it.krzeminski.githubactions.domain.triggers.Push
+import it.krzeminski.githubactions.dsl.JobBuilder
 import it.krzeminski.githubactions.dsl.workflow
 import it.krzeminski.githubactions.yaml.writeToFile
 import java.io.File
 import java.nio.file.Paths
+
+val logicHolders: MutableList<() -> Unit> = mutableListOf()
 
 val scriptWithServerWorkflow = workflow(
     name = "Script with server",
@@ -32,18 +35,10 @@ val scriptWithServerWorkflow = workflow(
             name = "Checkout",
             action = CheckoutV3(),
         )
-        run(
-            name = "Start server in background",
-            command = ".github/workflows/script-with-server.main.kts &",
-        )
-        run(
-            name = "Wait for the server to start",
-            command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
-        )
-        run(
-            name = "Call the server",
-            command = "curl http://localhost:8123/action-logic",
-        )
+        runKotlin {
+            println("Hello from action logic! (doesn't work yet)")
+            File("output.txt").writeText("Written from Kotlin logic")
+        }
         run(
             name = "Read written file",
             command = "cat output.txt",
@@ -51,9 +46,23 @@ val scriptWithServerWorkflow = workflow(
     }
 }
 
-if (System.getenv("GITHUB_ACTIONS") != "true") {
-    scriptWithServerWorkflow.writeToFile(addConsistencyCheck = false)
+fun JobBuilder.runKotlin(logic: () -> Unit) {
+    run(
+        name = "Start server in background",
+        command = ".github/workflows/script-with-server.main.kts &",
+    )
+    run(
+        name = "Wait for the server to start",
+        command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
+    )
+    run(
+        name = "Call the server",
+        command = "curl http://localhost:8123/action-logic/${logicHolders.size}",
+    )
+    logicHolders += logic
 }
+
+scriptWithServerWorkflow.writeToFile(addConsistencyCheck = false)
 startServerIfRunningOnGitHub()
 
 fun startServerIfRunningOnGitHub() {
@@ -66,10 +75,13 @@ fun startServerIfRunningOnGitHub() {
 
     embeddedServer(Netty, port = 8123) {
         routing {
-            get("/action-logic") {
-                println("Hello from action logic!")
-                File("output.txt").writeText("Written from Kotlin logic")
-                call.respondText("Response from API")
+            route("/action-logic") {
+                logicHolders.indices.forEach { logicIndex ->
+                    get("/$logicIndex") {
+                        logicHolders[logicIndex]()
+                        call.respondText("Response from API")
+                    }
+                }
             }
         }
     }.start(wait = true)

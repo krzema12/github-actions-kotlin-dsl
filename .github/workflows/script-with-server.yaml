@@ -22,7 +22,7 @@ jobs:
         run: while netstat -lnt | awk '$4 ~ /:8123$/ {exit 1}'; do sleep 1; done
       - id: step-3
         name: Call the server
-        run: curl http://localhost:8123/action-logic
+        run: curl http://localhost:8123/action-logic/0
       - id: step-4
         name: Read written file
         run: cat output.txt
