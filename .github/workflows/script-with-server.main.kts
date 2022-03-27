@@ -35,26 +35,26 @@ val scriptWithServerWorkflow = workflow(
             name = "Checkout",
             action = CheckoutV3(),
         )
+        startServer() // Probably will be hidden somewhere.
         runKotlin {
             println("Hello from action logic! (doesn't work yet)")
-            File("output.txt").writeText("Written from Kotlin logic")
+            File("output-first.txt").writeText("Written from first Kotlin logic")
         }
         run(
-            name = "Read written file",
-            command = "cat output.txt",
+            name = "Read written file 1",
+            command = "cat output-first.txt",
+        )
+        runKotlin {
+            File("output-second.txt").writeText((1..100).joinToString(","))
+        }
+        run(
+            name = "Read written file 2",
+            command = "cat output-second.txt",
         )
     }
 }
 
 fun JobBuilder.runKotlin(logic: () -> Unit) {
-    run(
-        name = "Start server in background",
-        command = ".github/workflows/script-with-server.main.kts &",
-    )
-    run(
-        name = "Wait for the server to start",
-        command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
-    )
     run(
         name = "Call the server",
         command = "curl http://localhost:8123/action-logic/${logicHolders.size}",
@@ -85,4 +85,15 @@ fun startServerIfRunningOnGitHub() {
             }
         }
     }.start(wait = true)
+}
+
+fun JobBuilder.startServer() {
+    run(
+        name = "Start server in background",
+        command = ".github/workflows/script-with-server.main.kts &",
+    )
+    run(
+        name = "Wait for the server to start",
+        command = "while netstat -lnt | awk '\$4 ~ /:8123\$/ {exit 1}'; do sleep 1; done",
+    )
 }

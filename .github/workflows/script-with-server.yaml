@@ -24,5 +24,11 @@ jobs:
         name: Call the server
         run: curl http://localhost:8123/action-logic/0
       - id: step-4
-        name: Read written file
-        run: cat output.txt
+        name: Read written file 1
+        run: cat output-first.txt
+      - id: step-5
+        name: Call the server
+        run: curl http://localhost:8123/action-logic/1
+      - id: step-6
+        name: Read written file 2
+        run: cat output-second.txt
