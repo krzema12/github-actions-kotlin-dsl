@@ -5,8 +5,17 @@ fun expr(expression: Expr.() -> String): String =
 
 object Expr {
     val job = JobContext
-    val env = emptyMap<String, EnvironmentVariable>().withDefault { EnvironmentVariable(it) }
+    val runner = RunnerContext
+    val env = emptyMap<String, String>()
+        .withDefault { it }
+    val secrets = emptyMap<String, String>()
+        .withDefault { "secrets.$it" }
 
+    /***
+     * GITHUB_TOKEN is a secret that is automatically created for every workflow run, and is always included in the secrets context. For more information, see "Automatic token authentication."
+     * https://docs.github.com/en/actions/security-guides/automatic-token-authentication
+     */
+    val GITHUB_TOKEN by secrets
 
     /** Always set to true. **/
     val CI by env
