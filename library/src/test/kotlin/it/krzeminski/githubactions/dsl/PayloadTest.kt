@@ -46,12 +46,13 @@ class PayloadTest : FunSpec({
 
     test("github context - without github.event") {
         val unsupportedProperties = listOf("event")
+        val ignoreProperties = listOf("eventPullRequest", "eventPush", "eventRelease", "eventWorkflowDispatch")
 
         val context = GitHubContext::class
         val file = payloads.resolve("github-push.json")
         val jsonObject = Json.parseToJsonElement(file.readText()).jsonObject
 
-        context.properties() shouldMatch (jsonObject.keys.sorted() - unsupportedProperties)
+        (context.properties()-ignoreProperties) shouldMatch (jsonObject.keys.sorted() - unsupportedProperties)
     }
 })
 

@@ -12,7 +12,7 @@ class ExprUnitTest : FunSpec({
 
     test("Environment variables") {
         assertSoftly {
-            val DAY_OF_WEEK by Expr.env
+            val DAY_OF_WEEK by Expr.env.map
             "$DAY_OF_WEEK == 'Monday'" shouldBe "${dollar}DAY_OF_WEEK == 'Monday'"
 
             "${Env.CI} == true && ${Env.GITHUB_ACTIONS} == true" shouldBe
@@ -24,7 +24,7 @@ class ExprUnitTest : FunSpec({
         assertSoftly {
             expr { secrets.GITHUB_TOKEN } shouldBe expr("secrets.GITHUB_TOKEN")
 
-            val NPM_TOKEN by Expr.secrets
+            val NPM_TOKEN by Expr.secrets.map
             expr { NPM_TOKEN } shouldBe expr("secrets.NPM_TOKEN")
         }
     }
@@ -59,7 +59,7 @@ class ExprUnitTest : FunSpec({
     test("Matrix context") {
         assertSoftly {
             expr { matrix.os } shouldBe expr("matrix.os")
-            val node by Expr.matrix
+            val node by Expr.matrix.map
             expr { node } shouldBe expr("matrix.node")
         }
     }
@@ -110,16 +110,16 @@ class ExprUnitTest : FunSpec({
     test("GitHub event payloads") {
         assertSoftly {
             expr { github.eventPullRequest.pull_request.url } shouldBe
-                    expr("github.event.pull_request.url")
+                expr("github.event.pull_request.url")
 
             expr { github.eventPush.commits[0] } shouldBe
-                    expr("github.event.commits[0]")
+                expr("github.event.commits[0]")
 
             expr { github.eventRelease.release.assets_url } shouldBe
-                    expr("github.event.release.assets_url")
+                expr("github.event.release.assets_url")
 
             expr { github.eventWorkflowDispatch.workflow } shouldBe
-                    expr("github.event.workflow")
+                expr("github.event.workflow")
         }
     }
 })

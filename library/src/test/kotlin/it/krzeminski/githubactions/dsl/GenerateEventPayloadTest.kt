@@ -92,7 +92,6 @@ fun generateObjectTypes(objects: Map<String, JsonObject>, filename: String, pack
     return fileSpec.build().also { println(it) }
 }
 
-
 fun generateObjectType(key: String, value: JsonObject, packageName: String, filename: String): TypeSpec {
     fun payloadClassName(key: String) =
         key
