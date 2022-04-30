@@ -10,6 +10,14 @@ package it.krzeminski.githubactions.expr
  * **/
 object GitHubContext : ExprContext("github") {
 
+    val eventPush = PushEvent
+
+    val eventPullRequest = PullRequestEvent
+
+    val eventRelease = ReleaseEvent
+
+    val eventWorkflowDispatch = WorkflowDispatchEvent
+
     val token by map
 
     val job by map

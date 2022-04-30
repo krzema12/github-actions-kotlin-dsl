@@ -106,4 +106,20 @@ class ExprUnitTest : FunSpec({
                 expr("join(github.event.issue.labels.*.name, ', ')")
         }
     }
+
+    test("GitHub event payloads") {
+        assertSoftly {
+            expr { github.eventPullRequest.pull_request.url } shouldBe
+                    expr("github.event.pull_request.url")
+
+            expr { github.eventPush.commits[0] } shouldBe
+                    expr("github.event.commits[0]")
+
+            expr { github.eventRelease.release.assets_url } shouldBe
+                    expr("github.event.release.assets_url")
+
+            expr { github.eventWorkflowDispatch.workflow } shouldBe
+                    expr("github.event.workflow")
+        }
+    }
 })
