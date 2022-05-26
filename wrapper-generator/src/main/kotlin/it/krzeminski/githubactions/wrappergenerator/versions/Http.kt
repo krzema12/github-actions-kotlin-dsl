@@ -10,8 +10,11 @@ import okhttp3.Request
 val ActionCoords.apiTagsUrl: String
     get() = "https://api.github.com/repos/$owner/$name/git/matching-refs/tags/v"
 
+val ActionCoords.apiBranchesUrl: String
+    get() = "https://api.github.com/repos/$owner/$name/git/matching-refs/heads/v"
+
 @Serializable
-data class GithubTag(
+data class GithubRef(
     val ref: String,
 )
 
@@ -22,18 +25,33 @@ val okhttpClient by lazy {
 }
 
 fun ActionCoords.fetchAvailableVersions(githubToken: String): List<Version> {
-    val request: Request = Request.Builder()
+    val tagsRequest: Request = Request.Builder()
         .header("Authorization", "token $githubToken")
         .url(apiTagsUrl)
         .build()
 
-    val content = okhttpClient.newCall(request).execute().use { response ->
+    val tagsContent = okhttpClient.newCall(tagsRequest).execute().use { response ->
         if (response.isSuccessful.not()) {
             println(response.headers)
             error("API rate reached?  See https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting")
         }
         response.body!!.string()
     }
-    val data = json.decodeFromString<List<GithubTag>>(content)
-    return data.versions()
+    val tagsData = json.decodeFromString<List<GithubRef>>(tagsContent)
+
+    val branchesRequest: Request = Request.Builder()
+        .header("Authorization", "token $githubToken")
+        .url(apiBranchesUrl)
+        .build()
+
+    val branchesContent = okhttpClient.newCall(branchesRequest).execute().use { response ->
+        if (response.isSuccessful.not()) {
+            println(response.headers)
+            error("API rate reached?  See https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting")
+        }
+        response.body!!.string()
+    }
+    val branchesData = json.decodeFromString<List<GithubRef>>(branchesContent)
+
+    return tagsData.versions() + branchesData.versions()
 }

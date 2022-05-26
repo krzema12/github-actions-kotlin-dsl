@@ -54,9 +54,9 @@ fun main() {
     }
 }
 
-fun List<GithubTag>.versions(): List<Version> =
-    this.map { githubTag ->
-        val version = githubTag.ref.substringAfterLast("/")
+fun List<GithubRef>.versions(): List<Version> =
+    this.map { githubRef ->
+        val version = githubRef.ref.substringAfterLast("/")
         Version(version)
     }
 
