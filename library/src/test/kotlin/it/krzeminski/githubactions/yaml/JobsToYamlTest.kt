@@ -9,6 +9,7 @@ import it.krzeminski.githubactions.domain.RunnerType.UbuntuLatest
 import it.krzeminski.githubactions.domain.RunnerType.Windows2022
 import it.krzeminski.githubactions.dsl.BooleanCustomValue
 import it.krzeminski.githubactions.dsl.ListCustomValue
+import it.krzeminski.githubactions.dsl.expressions.Contexts
 import it.krzeminski.githubactions.dsl.expressions.expr
 
 class JobsToYamlTest : DescribeSpec({
@@ -228,6 +229,9 @@ class JobsToYamlTest : DescribeSpec({
     }
 
     it("renders with strategy matrix") {
+        @Suppress("VariableNaming")
+        val NODE by Contexts.matrix.map
+
         // given
         val jobs = listOf(
             Job(
@@ -236,6 +240,7 @@ class JobsToYamlTest : DescribeSpec({
                 strategyMatrix = mapOf(
                     "strategyParam1" to listOf("foo", "bar"),
                     "strategyParam2" to listOf("baz", "goo"),
+                    NODE to listOf("10", "12")
                 ),
                 steps = listOf(
                     CommandStep(
@@ -261,6 +266,9 @@ class JobsToYamlTest : DescribeSpec({
                          |      strategyParam2:
                          |        - baz
                          |        - goo
+                         |      NODE:
+                         |        - 10
+                         |        - 12
                          |  steps:
                          |    - id: someId
                          |      name: Some command

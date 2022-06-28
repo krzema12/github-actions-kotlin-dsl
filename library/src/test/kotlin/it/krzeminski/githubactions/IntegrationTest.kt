@@ -6,19 +6,23 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import it.krzeminski.githubactions.actions.actions.CheckoutV3
+import it.krzeminski.githubactions.actions.actions.SetupNodeV3
 import it.krzeminski.githubactions.actions.endbug.AddAndCommitV9
 import it.krzeminski.githubactions.domain.Concurrency
 import it.krzeminski.githubactions.domain.RunnerType
 import it.krzeminski.githubactions.domain.triggers.Push
-import it.krzeminski.githubactions.dsl.expressions.expr
+import it.krzeminski.githubactions.dsl.expressions.Contexts
 import it.krzeminski.githubactions.dsl.workflow
+import it.krzeminski.githubactions.dsl.expressions.Env
+import it.krzeminski.githubactions.dsl.expressions.Secrets
+import it.krzeminski.githubactions.dsl.expressions.expr
 import it.krzeminski.githubactions.testutils.shouldMatchFile
 import it.krzeminski.githubactions.yaml.toYaml
 import it.krzeminski.githubactions.yaml.writeToFile
 import java.nio.file.Path
 import java.nio.file.Paths
 
-@Suppress("LargeClass")
+@Suppress("LargeClass", "VariableNaming")
 class IntegrationTest : FunSpec({
 
     val gitRootDir = tempdir().also {
@@ -699,19 +703,66 @@ class IntegrationTest : FunSpec({
     }
 
     test("Executing workflow with type-safe expressions") {
+
         val workflowWithTypeSafeExpressions = workflow(
             name = "workflow-expr-typesafe",
             on = listOf(Push()),
             sourceFile = Path.of("ExprIntegrationTest.kt"),
         ) {
+            val NODE by Contexts.matrix.map
+            val GREETING by Contexts.env.map
+            val FIRST_NAME by Contexts.env.map
+            val SECRET by Contexts.env.map
+            val TOKEN by Contexts.env.map
+            val SUPER_SECRET by Contexts.secrets.map
+
             job(
                 id = "job1",
                 runsOn = RunnerType.UbuntuLatest,
+                strategyMatrix = mapOf(
+                    "OS" to listOf("ubuntu-latest", "windows-latest"),
+                    NODE to listOf("14", "16"),
+                ),
+                env = linkedMapOf(
+                    GREETING to "World",
+                )
             ) {
                 uses(CheckoutV3())
                 run(
+                    name = "Default environment variable",
+                    command = "action=${Env.GITHUB_ACTION} repo=${Env.GITHUB_REPOSITORY}",
+                    condition = expr { always() }
+                )
+                run(
+                    name = "Custom environment variable",
+                    env = linkedMapOf(
+                        FIRST_NAME to "Patrick",
+                    ),
+                    command = "echo " + expr { GREETING } + " " + expr { FIRST_NAME }
+                )
+                run(
+                    name = "Encrypted secret",
+                    env = linkedMapOf(
+                        SECRET to expr { SUPER_SECRET },
+                        TOKEN to expr { Secrets.GITHUB_TOKEN }
+                    ),
+                    command = "echo secret=$SECRET token=$TOKEN"
+                )
+                uses(
+                    name = "MatrixContext node",
+                    SetupNodeV3(nodeVersion = expr { NODE })
+                )
+                run(
                     name = "RunnerContext create temp directory",
                     command = "mkdir " + expr { runner.temp } + "/build_logs"
+                )
+                run(
+                    name = "GitHubContext echo sha",
+                    command = "echo " + expr { github.sha }
+                )
+                run(
+                    name = "StrategyContext job-index",
+                    command = "npm test > test-job-" + expr { strategy.`job-index` } + ".txt"
                 )
             }
         }
