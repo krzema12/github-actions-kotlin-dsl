@@ -119,7 +119,7 @@ private fun Workflow.generateYaml(addConsistencyCheck: Boolean, useGitDiff: Bool
 internal fun HasCustomArguments.customArgumentsToYaml(): String = buildString {
     for ((key, customValue) in _customArguments) {
         when (customValue) {
-            is ListCustomValue -> printIfHasElements(customValue.value, key)
+            is ListCustomValue -> printIfHasElements(customValue, key)
             is StringCustomValue -> appendLine("  $key: ${customValue.value}")
             is ObjectCustomValue -> {
                 appendLine("  $key:")
@@ -142,4 +142,18 @@ internal fun StringBuilder.printIfHasElements(
             appendLine("  - '$it'".prependIndent(space))
         }
     }
+}
+
+internal fun StringBuilder.printIfHasElements(
+    list: ListCustomValue?,
+    name: String,
+    space: String = "  ",
+) {
+//    if (!items.isNullOrEmpty()) {
+//        appendLine("$name:".prependIndent(space))
+//        items.forEach {
+//            appendLine("  - '$it'".prependIndent(space))
+//        }
+//    }
+    TODO()
 }

@@ -15,10 +15,10 @@ sealed class CustomValue
 data class StringCustomValue(val value: String) : CustomValue()
 
 @Serializable
-data class ListCustomValue(val value: List<String>) : CustomValue()
+data class ListCustomValue(val value: List<CustomValue>) : CustomValue()
 
 @Serializable
-data class ObjectCustomValue(val value: Map<String, String>) : CustomValue()
+data class ObjectCustomValue(val value: Map<String, CustomValue>) : CustomValue()
 
 fun IntCustomValue(value: Int): StringCustomValue =
     StringCustomValue("$value")
@@ -26,8 +26,5 @@ fun IntCustomValue(value: Int): StringCustomValue =
 fun BooleanCustomValue(value: Boolean): StringCustomValue =
     StringCustomValue("$value")
 
-fun ListCustomValue(vararg params: String): ListCustomValue =
+fun ListCustomValue(vararg params: CustomValue): ListCustomValue =
     ListCustomValue(params.toList())
-
-fun ListCustomValue(vararg params: Int): ListCustomValue =
-    ListCustomValue(params.map { "$it" })
